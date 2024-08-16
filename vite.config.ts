@@ -1,14 +1,14 @@
-import path from "path"
-import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import path from "path";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
-const basenameProd = '/shadcn-sample'
+const basenameProd = "/shadcn-sample";
 
 export default defineConfig(({ command }) => {
-  const isProd = command === 'build'
+  const isProd = command === "build";
 
   return {
-    base: isProd ? basenameProd : '',
+    base: isProd ? basenameProd : "",
     plugins: [react()],
     resolve: {
       alias: {
@@ -17,8 +17,8 @@ export default defineConfig(({ command }) => {
     },
     define: {
       global: {
-        basename: isProd ? basenameProd : '',
+        basename: isProd ? basenameProd : "",
       },
     },
-  }
-})
+  };
+});
