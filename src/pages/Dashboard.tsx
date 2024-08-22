@@ -15,7 +15,7 @@ import { MoveRight } from "lucide-react";
 const notifications = [
   {
     machine: 1,
-    status: "CONVEYER_ON",
+    status: "CONVEYER_OFF",
     time: "2024:08:16 07:39:55",
   },
   {
@@ -82,11 +82,11 @@ export default function Dashboard() {
           <Card className="w-full md:w-1/2">
             <CardHeader>
               <div className="flex justify-between items-center space-x-4">
-                <CardDescription>
-                  Working time : 360/480
-                  <br />
-                  Manual stop&nbsp; : 120
-                </CardDescription>
+                <CardTitle>
+                  Working time<br/> <p className="text-2lg text-muted-foreground" >360/480</p>
+                  
+                  Manual stop<br/> <p>120</p>
+                </CardTitle>
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <Switch />
                 </div>
@@ -117,7 +117,7 @@ export default function Dashboard() {
                             {notification.status}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            running
+                            {index === 0 ? 'Manual_Stop' : ''}
                           </p>
                         </div>
                         <p className="text-sm text-muted-foreground">
