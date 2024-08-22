@@ -81,12 +81,20 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
           <Card className="w-full md:w-1/2">
             <CardHeader>
-              <div className="flex justify-between items-center space-x-4">
-                <CardTitle>
-                  Working time<br/> <p className="text-2lg text-muted-foreground" >360/480</p>
-                  
-                  Manual stop<br/> <p>120</p>
-                </CardTitle>
+              <div className="flex justify-between items-top space-x-4">
+              <CardTitle>
+                <div className="space-y-3"> {/* Adjust space-y value as needed */}
+                  <div>
+                    <p className="text-lg font-small leading-none">Working time</p>
+                    <p className="text-2lg text-muted-foreground">360/480</p>
+                  </div>
+                  <div>
+                    <p className="text-lg font-small leading-none">Manual stop</p>
+                    <p className="text-2lg text-muted-foreground">120</p>
+                  </div>
+                </div>
+              </CardTitle>
+
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <Switch />
                 </div>
