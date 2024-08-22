@@ -8,25 +8,66 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-];
+function getPastDays(numDays: number): string[] {
+  const days = [];
+  const today = new Date();
+
+  for (let i = numDays - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(today.getDate() - i);
+
+    // Format date as DD/MM
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const formattedDate = `${month}/${day}`;
+
+    days.push(formattedDate);
+  }
+
+  console.log(days);
+  return days;
+}
+
+const dates = getPastDays(7);
+let x = [200, 240, 140, 340, 170, 220, 240],
+  y = [60, 80, 90, 50, 60, 50, 70],
+  i = 0;
+const chartData = dates.map((date) => ({
+  date: date,
+  working: x[i], // Random minutes between 1 hour (60 mins) and 8 hours (480 mins)
+  stopped: y[i++], // Random minutes between 0 and 2 hours (120 mins)
+}));
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  working: {
+    label: "Working",
     color: "#2563eb",
   },
-  mobile: {
-    label: "Mobile",
+  stopped: {
+    label: "Manual Stop",
     color: "#60a5fa",
   },
 } satisfies ChartConfig;
+
+// const chartData = [
+//   { month: "January", desktop: 186, mobile: 80 },
+//   { month: "February", desktop: 305, mobile: 200 },
+//   { month: "March", desktop: 237, mobile: 120 },
+//   { month: "April", desktop: 73, mobile: 190 },
+//   { month: "May", desktop: 209, mobile: 130 },
+//   { month: "June", desktop: 214, mobile: 140 },
+// ];
+
+// const chartConfig = {
+//   desktop: {
+//     label: "Desktop",
+//     color: "#2563eb",
+//   },
+//   mobile: {
+//     label: "Mobile",
+//     color: "#60a5fa",
+//   },
+// } satisfies ChartConfig;
 
 export function Chart() {
   return (
@@ -39,16 +80,16 @@ export function Chart() {
       >
         <CartesianGrid vertical={false} />
         <XAxis
-          dataKey="month"
+          dataKey="date"
           tickLine={false}
           tickMargin={10}
           axisLine={false}
-          tickFormatter={(value) => value.slice(0, 3)}
+          tickFormatter={(value) => value}
         />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
-        <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-        <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+        <Bar dataKey="working" fill="var(--color-working)" radius={4} />
+        <Bar dataKey="stopped" fill="var(--color-stopped)" radius={4} />
       </BarChart>
     </ChartContainer>
   );
