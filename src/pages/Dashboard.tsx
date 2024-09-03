@@ -11,24 +11,7 @@ import {
 import { Chart } from "./Chart";
 import { Switch } from "../components/ui/switch";
 import { MoveRight } from "lucide-react";
-
-const notifications = [
-  {
-    machine: 1,
-    status: "CONVEYER_OFF",
-    time: "2024:08:16 07:39:55",
-  },
-  {
-    machine: 1,
-    status: "CONVEYER_ON",
-    time: "2024:08:16 07:43:02",
-  },
-  {
-    machine: 1,
-    status: "CONVEYER_ON",
-    time: "2024:08:16 08:18:27",
-  },
-];
+import LiveFeedCard from "@/components/LiveFeedCard";
 
 // async function fetchData() {
 //   try {
@@ -51,24 +34,51 @@ const notifications = [
 // }
 
 export default function Dashboard() {
-  // const [notifications, setNotifications] = useState([
-  //   {
-  //     machine: 0,
-  //     status: "",
-  //     time: "",
-  //   },
-  // ]);
-  // const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState([
+  {
+    "status": "MANUAL_OFF",
+    "time": "2024:08:21 20:12:50"
+  },
+  {
+    "status": "MANUAL_ON",
+    "time": "2024:08:21 20:12:58"
+  },
+  {
+    "status": "MANUAL_OFF",
+    "time": "2024:08:21 20:31:48"
+  },
+  {
+    "status": "MANUAL_ON",
+    "time": "2024:08:21 20:31:53"
+  },
+  {
+    "status": "MANUAL_OFF",
+    "time": "2024:08:21 20:34:34"
+  },
+  {
+    "status": "MANUAL_ON",
+    "time": "2024:08:21 20:34:40"
+  },
+  {
+    "status": "MANUAL_OFF",
+    "time": "2024:08:21 20:44:26"
+  },
+  {
+    "status": "MANUAL_ON",
+    "time": "2024:08:21 20:44:28"
+  }
+]);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const loadNotifications = async () => {
-  //     const data = await fetchData();
-  //     setNotifications(data);
-  //     setLoading(false);
-  //     console.log(notifications);
-  //   };
-  //   loadNotifications();
-  // }, []);
+  useEffect(() => {
+    const loadNotifications = async () => {
+      const data = await fetchData();
+      setNotifications(data);
+      setLoading(false);
+      console.log(notifications);
+    };
+    loadNotifications();
+  }, []);
 
   // if (loading) return <p>Loading...</p>; //replace this for loader
 
@@ -78,69 +88,8 @@ export default function Dashboard() {
         <PageHeaderHeading>Dashboard</PageHeaderHeading>
       </PageHeader>
       <div className="min-h-screen flex flex-col items-center justify-between pb-36">
-        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
-          <Card className="w-full md:w-1/2">
-            <CardHeader>
-              <div className="flex justify-between items-top space-x-4">
-              <CardTitle>
-                <div className="space-y-3"> {/* Adjust space-y value as needed */}
-                  <div>
-                    <p className="text-lg font-small leading-none">Working time</p>
-                    <p className="text-2lg text-muted-foreground">360/480</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-small leading-none">Manual stop</p>
-                    <p className="text-2lg text-muted-foreground">120</p>
-                  </div>
-                </div>
-              </CardTitle>
-
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Switch />
-                </div>
-              </div>
-              {/* <CardTitle>Turn On / Off the Machine</CardTitle>
-              <CardDescription>Description about the model</CardDescription> */}
-            </CardHeader>
-            <CardContent className="grid gap-4">
-              {/* <div className="flex items-center space-x-4 rounded-md border p-4">
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Current Status
-                  </p>
-                </div>
-              </div> */}
-
-              <div>
-                {notifications.length > 0 ? (
-                  notifications.map((notification, index) => (
-                    <div
-                      key={index}
-                      className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
-                    >
-                      <span className="flex h-2 w-2 translate-y-1 rounded-full bg-sky-500" />
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-center space-x-4">
-                          <p className="text-sm font-medium leading-none">
-                            {notification.status}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {index === 0 ? 'Manual_Stop' : ''}
-                          </p>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {notification.time}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p>No notifications available.</p>
-                )}
-              </div>
-              {/* <Button>View Details</Button> */}
-            </CardContent>
-          </Card>
+        <div className="flex flex-col items-center justify-between w-full gap-4">
+          <LiveFeedCard />
           <div className="w-full md:w-1/2">
             <Chart />
           </div>
