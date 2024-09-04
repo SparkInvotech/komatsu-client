@@ -19,16 +19,6 @@ export const mainMenu: NavItemWithChildren[] = [
     title: "Dashboard",
     to: "/",
   },
-
-  {
-    title: "Pages",
-    items: [
-      {
-        title: "New Page",
-        to: "/empty",
-      },
-    ],
-  },
 ];
 
 export const sideMenu: NavItemWithChildren[] = [
