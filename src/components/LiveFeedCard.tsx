@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { onValue, ref } from "firebase/database";
 import { db } from "@/lib/firebase";
 
@@ -14,57 +20,104 @@ const statuses = {
   MS1: "Manual Stop ON",
 };
 
+type TotalTimingType = {
+  totalES: number;
+  totalRN: number;
+  totalMS: number;
+};
+
 function LiveFeedCard() {
   const [notifications, setNotifications] = useState<
     NotificationType[] | undefined
   >();
   const [isLoading, setIsLoading] = useState(true);
+  const [totalTiming, setTotalTiming] = useState<TotalTimingType[] | undefined>(
+    [
+      {
+        totalES: 0,
+        totalRN: 0,
+        totalMS: 0,
+      },
+    ],
+  );
 
-  // function calc() {
-  //   if (!notifications) {
-  //     return;
-  //   }
-  //   notifications.sort((a, b) => new Date(a.time) - new Date(b.time));
+  function calc(data) {
+    if (!data) {
+      return;
+    }
+    data.sort((a, b) => new Date(a.time) - new Date(b.time));
 
-  //   // Group the data by date
-  //   const groupedData = notifications.reduce((acc, curr) => {
-  //     const date = curr.time.split(" ")[0];
-  //     if (!acc[date]) {
-  //       acc[date] = [];
-  //     }
-  //     acc[date].push(curr);
-  //     return acc;
-  //   }, {});
+    // Group the data by date
+    const groupedData = data.reduce((acc, curr) => {
+      const date = curr.time.split(" ")[0];
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(curr);
+      return acc;
+    }, {});
 
-  //   // Calculate the active and inactive time for each date
-  //   const result = Object.keys(groupedData).map((date) => {
-  //     let active = 0;
-  //     let inactive = 0;
-  //     let prevStatus = null;
-  //     let prevTime = null;
+    // Calculate the total time in ES1 state for each date
+    const result = Object.keys(groupedData).map((date) => {
+      let totalTimeES1 = 0;
+      let totalTimeMS1 = 0;
+      let totalTimeWorking = 0;
+      let prevStatus = null;
+      let prevTime = null;
 
-  //     groupedData[date].forEach((item) => {
-  //       if (prevStatus === "CONVEYER_ON" && item.status === "CONVEYER_OFF") {
-  //         active += (new Date(item.time) - new Date(prevTime)) / 60000;
-  //       } else if (
-  //         prevStatus === "CONVEYER_OFF" &&
-  //         item.status === "CONVEYER_ON"
-  //       ) {
-  //         inactive += (new Date(item.time) - new Date(prevTime)) / 60000;
-  //       }
-  //       prevStatus = item.status;
-  //       prevTime = item.time;
-  //     });
+      groupedData[date].forEach((item) => {
+        const currentStatus = item.status.match(/MANUAL: (\w+)/)[1];
+        if (prevStatus === "ES1" && currentStatus !== "ES1") {
+          totalTimeES1 += (new Date(item.time) - new Date(prevTime)) / 60000;
+        } else if (prevStatus === "MS1" && currentStatus !== "MS1") {
+          totalTimeMS1 += (new Date(item.time) - new Date(prevTime)) / 60000;
+        } else if (
+          prevStatus !== "ES1" &&
+          prevStatus !== "MS1" &&
+          currentStatus === "ES1"
+        ) {
+          totalTimeWorking +=
+            (new Date(item.time) - new Date(prevTime)) / 60000;
+        } else if (
+          prevStatus !== "ES1" &&
+          prevStatus !== "MS1" &&
+          currentStatus === "MS1"
+        ) {
+          totalTimeWorking +=
+            (new Date(item.time) - new Date(prevTime)) / 60000;
+        }
+        prevStatus = currentStatus;
+        prevTime = item.time;
+      });
 
-  //     return {
-  //       date,
-  //       active,
-  //       inactive,
-  //     };
-  //   });
+      // Calculate the total time working for the last status of the day
+      const lastStatus =
+        groupedData[date][groupedData[date].length - 1].status.match(
+          /MANUAL: (\w+)/,
+        )[1];
+      if (lastStatus !== "ES1" && lastStatus !== "MS1") {
+        const lastTime = groupedData[date][groupedData[date].length - 1].time;
+        const endOfDay = new Date(date + " 23:59:59");
+        totalTimeWorking += (endOfDay - new Date(lastTime)) / 60000;
+      }
 
-  //   console.log(result);
-  // }
+      return {
+        date,
+        totalTimeES1,
+        totalTimeMS1,
+        totalTimeWorking,
+      };
+    });
+
+    console.log(result);
+    setTotalTiming(
+      result.map((res) => ({
+        totalES: res.totalTimeES1,
+        totalRN: res.totalTimeWorking,
+        totalMS: res.totalTimeMS1,
+      })),
+    );
+  }
 
   // useEffect(() => {
   //   const unssub = onValue(ref(db, "komatsu_logs"), (snapshot) => {
@@ -93,6 +146,7 @@ function LiveFeedCard() {
         const res = await req.json();
         console.log("🚀 ~ fetchData ~ res:", res);
         setNotifications(res);
+        calc(res);
       } catch (error) {
         console.log("🚀 ~ fetchData ~ error:", error);
       } finally {
@@ -105,28 +159,36 @@ function LiveFeedCard() {
 
   return (
     <Card className="w-full md:w-1/2">
-      {/* <CardHeader>
-              <div className="flex justify-between items-top space-x-4">
-              <CardTitle>
-                <div className="space-y-3"> 
-                  <div>
-                    <p className="text-lg font-small leading-none">Working time</p>
-                    <p className="text-2lg text-muted-foreground">360/480</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-small leading-none">Manual stop</p>
-                    <p className="text-2lg text-muted-foreground">120</p>
-                  </div>
-                </div>
-              </CardTitle>
-
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Switch />
-                </div>
+      <CardHeader>
+        <div className="flex justify-between items-top space-x-4">
+          <CardTitle>
+            <div className="space-y-3">
+              <div>
+                <p className="text-lg font-small leading-none">Working time</p>
+                <p className="text-2lg text-muted-foreground">
+                  {(totalTiming?.at(-1)?.totalRN / 600000).toFixed(2)}/480
+                </p>
               </div>
-              <CardTitle>Turn On / Off the Machine</CardTitle>
-              <CardDescription>Description about the model</CardDescription>
-            </CardHeader> */}
+              <div>
+                <p className="text-lg font-small leading-none">Manual stop</p>
+                <p className="text-2lg text-muted-foreground">
+                  {totalTiming?.at(-1)?.totalMS.toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-lg font-small leading-none">
+                  Emergency stop
+                </p>
+                <p className="text-2lg text-muted-foreground">
+                  {totalTiming?.at(-1)?.totalES.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </CardTitle>
+        </div>
+        {/* <CardTitle>Turn On / Off the Machine</CardTitle>
+              <CardDescription>Description about the model</CardDescription> */}
+      </CardHeader>
       {/* <CardHeader>
         <button onClick={calc}>Hi</button>
       </CardHeader> */}
@@ -151,6 +213,7 @@ function LiveFeedCard() {
                           .trim() as keyof typeof statuses
                       ]
                     }
+                    - {notification.status.split(",")[0].split(":")[1].trim()}
                   </p>
                 </div>
                 <p className="text-sm text-muted-foreground">
