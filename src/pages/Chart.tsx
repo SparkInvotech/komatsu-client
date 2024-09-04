@@ -36,6 +36,7 @@ const chartData = dates.map((date) => ({
   date: date,
   working: x[i], // Random minutes between 1 hour (60 mins) and 8 hours (480 mins)
   stopped: y[i++], // Random minutes between 0 and 2 hours (120 mins)
+  emergency: y[i],
 }));
 
 const chartConfig = {
@@ -47,27 +48,11 @@ const chartConfig = {
     label: "Manual Stop",
     color: "#60a5fa",
   },
+  emergency: {
+    label: "Emergency Stop",
+    color: "#AA4A44",
+  },
 } satisfies ChartConfig;
-
-// const chartData = [
-//   { month: "January", desktop: 186, mobile: 80 },
-//   { month: "February", desktop: 305, mobile: 200 },
-//   { month: "March", desktop: 237, mobile: 120 },
-//   { month: "April", desktop: 73, mobile: 190 },
-//   { month: "May", desktop: 209, mobile: 130 },
-//   { month: "June", desktop: 214, mobile: 140 },
-// ];
-
-// const chartConfig = {
-//   desktop: {
-//     label: "Desktop",
-//     color: "#2563eb",
-//   },
-//   mobile: {
-//     label: "Mobile",
-//     color: "#60a5fa",
-//   },
-// } satisfies ChartConfig;
 
 export function Chart() {
   return (
@@ -90,6 +75,7 @@ export function Chart() {
         <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey="working" fill="var(--color-working)" radius={4} />
         <Bar dataKey="stopped" fill="var(--color-stopped)" radius={4} />
+        <Bar dataKey="emergency" fill="#c30010" radius={4} />
       </BarChart>
     </ChartContainer>
   );

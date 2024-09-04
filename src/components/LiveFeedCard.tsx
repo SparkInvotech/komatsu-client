@@ -17,64 +17,8 @@ const statuses = {
 function LiveFeedCard() {
   const [notifications, setNotifications] = useState<
     NotificationType[] | undefined
-  >([
-    {
-      machine: 1,
-      status: "MANUAL: ES1, GreenStatus: OFF, RedStatus: ON\r",
-      time: "2024:08:22 21:40:47",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: ES0, GreenStatus: OFF, RedStatus: OFF\r",
-      time: "2024:08:22 21:41:08",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: RN1, GreenStatus: ON, RedStatus: OFF\r",
-      time: "2024:08:22 21:41:36",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: RN0, GreenStatus: OFF, RedStatus: OFF\r",
-      time: "2024:08:22 21:42:01",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: MS1, GreenStatus: ON, RedStatus: OFF\r",
-      time: "2024:08:22 21:42:20",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: MS0, GreenStatus: ON, RedStatus: OFF\r",
-      time: "2024:08:22 21:43:24",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: RN1, GreenStatus: ON, RedStatus: OFF\r",
-      time: "2024:08:22 21:43:27",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: ES1, GreenStatus: OFF, RedStatus: ON\r",
-      time: "2024:09:03 18:36:11",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: ES1, GreenStatus: OFF, RedStatus: ON\r",
-      time: "2024:09:03 18:38:50",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: ES0, GreenStatus: OFF, RedStatus: OFF\r",
-      time: "2024:09:03 18:39:38",
-    },
-    {
-      machine: 1,
-      status: "MANUAL: ES1, GreenStatus: OFF, RedStatus: ON\r",
-      time: "2024:09:03 18:44:04",
-    },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
+  >();
+  const [isLoading, setIsLoading] = useState(true);
 
   // function calc() {
   //   if (!notifications) {
@@ -142,6 +86,23 @@ function LiveFeedCard() {
   //   return () => unssub();
   // }, []);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const req = await fetch("https://komatsu-server.vercel.app/");
+        const res = await req.json();
+        console.log("🚀 ~ fetchData ~ res:", res);
+        setNotifications(res);
+      } catch (error) {
+        console.log("🚀 ~ fetchData ~ error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <Card className="w-full md:w-1/2">
       {/* <CardHeader>
@@ -184,7 +145,10 @@ function LiveFeedCard() {
                   <p className="text-sm font-medium leading-none">
                     {
                       statuses[
-                        notification.status.split(",")[0].split(":")[1].trim()
+                        notification.status
+                          .split(",")[0]
+                          .split(":")[1]
+                          .trim() as keyof typeof statuses
                       ]
                     }
                   </p>
