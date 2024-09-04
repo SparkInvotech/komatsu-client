@@ -162,20 +162,20 @@ function LiveFeedCard() {
       <CardHeader>
         <div className="flex justify-between items-top space-x-4">
           <CardTitle className="w-full">
-            <div className="flex justify-evenly mb-6 w-full items-center">
-              <div className="rounded-md border-gray-300 border p-4 px-8">
+            <div className="flex md:flex-row flex-col justify-evenly gap-3 mb-6 w-full items-center">
+              <div className="rounded-md border-gray-300 w-full border p-4 px-8">
                 <p className="text-lg font-small leading-none">Working time</p>
                 <p className="text-2lg text-muted-foreground">
                   {(totalTiming?.at(-1)?.totalRN / 600000).toFixed(2)}/480
                 </p>
               </div>
-              <div className="rounded-md border-gray-300 border p-4 px-8">
+              <div className="rounded-md border-gray-300 w-full border p-4 px-8">
                 <p className="text-lg font-small leading-none">Manual stop</p>
                 <p className="text-2lg text-muted-foreground">
                   {totalTiming?.at(-1)?.totalMS.toFixed(2)}
                 </p>
               </div>
-              <div className="rounded-md border-gray-300 border p-4 px-8">
+              <div className="rounded-md border-gray-300 w-full border p-4 px-8">
                 <p className="text-lg font-small leading-none">
                   Emergency stop
                 </p>
