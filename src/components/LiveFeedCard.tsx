@@ -12,12 +12,9 @@ import { db } from "@/lib/firebase";
 type NotificationType = { status: string; time: string; machine: number };
 
 const statuses = {
-  ES0: "Emergency Stop OFF",
-  ES1: "Emergency Stop ON",
-  RN0: "Stopped",
-  RN1: "Running",
-  MS0: "Manual Stop OFF",
-  MS1: "Manual Stop ON",
+  ES: "Emergency Stop",
+  RN: "Running",
+  MS: "Manual Stop",
 };
 
 type TotalTimingType = {
@@ -25,6 +22,69 @@ type TotalTimingType = {
   totalRN: number;
   totalMS: number;
 };
+
+const DUMMY_DATA = [
+  {
+    machine: 1,
+    status: "RN",
+    time: "2024-09-02 08:22:03",
+  },
+  {
+    machine: 1,
+    status: "ES",
+    time: "2024-09-02 10:31:57",
+  },
+  {
+    machine: 1,
+    status: "RN",
+    time: "2024-09-02 12:55:50",
+  },
+  {
+    machine: 1,
+    status: "MS",
+    time: "2024-09-02 14:21:12",
+  },
+  {
+    machine: 1,
+    status: "RN",
+    time: "2024-09-02 18:14:09",
+  },
+  {
+    machine: 1,
+    status: "MS",
+    time: "2024-09-02 20:20:59",
+  },
+  {
+    machine: 1,
+    status: "RN",
+    time: "2024-09-04 08:32:03",
+  },
+  {
+    machine: 1,
+    status: "ES",
+    time: "2024-09-04 11:31:57",
+  },
+  {
+    machine: 1,
+    status: "RN",
+    time: "2024-09-04 11:55:50",
+  },
+  {
+    machine: 1,
+    status: "MS",
+    time: "2024-09-04 15:31:12",
+  },
+  {
+    machine: 1,
+    status: "RN",
+    time: "2024-09-04 16:44:09",
+  },
+  {
+    machine: 1,
+    status: "MS",
+    time: "2024-09-04 22:30:59",
+  },
+];
 
 function LiveFeedCard() {
   const [notifications, setNotifications] = useState<
@@ -41,11 +101,11 @@ function LiveFeedCard() {
     ],
   );
 
-  function calc(data) {
+  function calc(data: NotificationType[]) {
     if (!data) {
       return;
     }
-    data.sort((a, b) => new Date(a.time) - new Date(b.time));
+    // data.sort((a, b) => new Date(b.time) - new Date(a.time));
 
     // Group the data by date
     const groupedData = data.reduce((acc, curr) => {
@@ -56,65 +116,43 @@ function LiveFeedCard() {
       acc[date].push(curr);
       return acc;
     }, {});
+    console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
 
     // Calculate the total time in ES1 state for each date
     const result = Object.keys(groupedData).map((date) => {
-      let totalTimeES1 = 0;
-      let totalTimeMS1 = 0;
-      let totalTimeWorking = 0;
-      let prevStatus = null;
-      let prevTime = null;
+      let totalRN = 0;
+      let totalES = 0;
+      let totalMS = 0;
+      let prevStatus = "";
+      let prevTime = "";
 
       groupedData[date].forEach((item) => {
-        const currentStatus = item.status.match(/MANUAL: (\w+)/)[1];
-        if (prevStatus === "ES1" && currentStatus !== "ES1") {
-          totalTimeES1 += (new Date(item.time) - new Date(prevTime)) / 60000;
-        } else if (prevStatus === "MS1" && currentStatus !== "MS1") {
-          totalTimeMS1 += (new Date(item.time) - new Date(prevTime)) / 60000;
-        } else if (
-          prevStatus !== "ES1" &&
-          prevStatus !== "MS1" &&
-          currentStatus === "ES1"
-        ) {
-          totalTimeWorking +=
-            (new Date(item.time) - new Date(prevTime)) / 60000;
-        } else if (
-          prevStatus !== "ES1" &&
-          prevStatus !== "MS1" &&
-          currentStatus === "MS1"
-        ) {
-          totalTimeWorking +=
-            (new Date(item.time) - new Date(prevTime)) / 60000;
+        const currentStatus = item.status;
+        if (prevStatus == "RN" && ["ES", "MS"].includes(currentStatus)) {
+          totalRN += (new Date(item.time) - new Date(prevTime)) / 60000;
+        } else if (prevStatus == "ES" && currentStatus == "RN") {
+          totalES += (new Date(item.time) - new Date(prevTime)) / 60000;
+        } else if (prevStatus == "MS" && currentStatus == "RN") {
+          totalMS += (new Date(item.time) - new Date(prevTime)) / 60000;
         }
         prevStatus = currentStatus;
         prevTime = item.time;
       });
 
-      // Calculate the total time working for the last status of the day
-      const lastStatus =
-        groupedData[date][groupedData[date].length - 1].status.match(
-          /MANUAL: (\w+)/,
-        )[1];
-      if (lastStatus !== "ES1" && lastStatus !== "MS1") {
-        const lastTime = groupedData[date][groupedData[date].length - 1].time;
-        const endOfDay = new Date(date + " 23:59:59");
-        totalTimeWorking += (endOfDay - new Date(lastTime)) / 60000;
-      }
-
       return {
         date,
-        totalTimeES1,
-        totalTimeMS1,
-        totalTimeWorking,
+        totalES,
+        totalMS,
+        totalRN,
       };
     });
 
     console.log(result);
     setTotalTiming(
-      result.map((res) => ({
-        totalES: res.totalTimeES1,
-        totalRN: res.totalTimeWorking,
-        totalMS: res.totalTimeMS1,
+      result.map(({ totalES, totalMS, totalRN }) => ({
+        totalES,
+        totalRN,
+        totalMS,
       })),
     );
   }
@@ -139,12 +177,15 @@ function LiveFeedCard() {
   //   return () => unssub();
   // }, []);
 
+  /** Soon replace with snapshot listener from firebase */
   useEffect(() => {
     async function fetchData() {
       try {
         const req = await fetch("https://komatsu-server.vercel.app/");
         const res = await req.json();
+        // const res = DUMMY_DATA;
         console.log("🚀 ~ fetchData ~ res:", res);
+        // await new Promise((res) => setTimeout(() => res(1000), 1000));
         setNotifications(res);
         calc(res);
       } catch (error) {
@@ -154,6 +195,7 @@ function LiveFeedCard() {
       }
     }
 
+    // calc(DUMMY_DATA);
     fetchData();
   }, []);
 
@@ -163,16 +205,16 @@ function LiveFeedCard() {
         <div className="flex justify-between items-top space-x-4">
           <CardTitle className="w-full">
             <div className="flex md:flex-row flex-col justify-evenly gap-3 mb-6 w-full items-center">
-              <div className="rounded-md border-gray-300 w-full border p-4 px-8">
+              <div className="rounded-md border-gray-300 w-full border p-4 px-4">
                 <p className="text-lg font-small leading-none">Working time</p>
-                <p className="text-2lg text-muted-foreground">
-                  {(totalTiming?.at(-1)?.totalRN / 600000).toFixed(2)}/480
+                <p className="text-xl text-muted-foreground">
+                  {totalTiming?.at(-1)?.totalRN.toFixed(2)}/480 mins
                 </p>
               </div>
               <div className="rounded-md border-gray-300 w-full border p-4 px-8">
                 <p className="text-lg font-small leading-none">Manual stop</p>
                 <p className="text-2lg text-muted-foreground">
-                  {totalTiming?.at(-1)?.totalMS.toFixed(2)}
+                  {totalTiming?.at(-1)?.totalMS.toFixed(2)} mins
                 </p>
               </div>
               <div className="rounded-md border-gray-300 w-full border p-4 px-8">
@@ -180,7 +222,7 @@ function LiveFeedCard() {
                   Emergency stop
                 </p>
                 <p className="text-2lg text-muted-foreground">
-                  {totalTiming?.at(-1)?.totalES.toFixed(2)}
+                  {totalTiming?.at(-1)?.totalES.toFixed(2)} mins
                 </p>
               </div>
             </div>
@@ -200,20 +242,13 @@ function LiveFeedCard() {
               className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
             >
               <span
-                className={`flex h-2 w-2 translate-y-1 rounded-full bg-sky-500 ${notification.status.split(",")[0].split(":")[1].trim() === "ES1" ? "bg-red-500" : ""}`}
+                className={`flex h-2 w-2 translate-y-1 rounded-full bg-sky-500 ${notification.status == "ES" ? "bg-red-500" : ""}`}
               />
               <div className="space-y-1">
                 <div className="flex justify-between items-center space-x-4">
                   <p className="text-sm font-medium leading-none">
-                    {
-                      statuses[
-                        notification.status
-                          .split(",")[0]
-                          .split(":")[1]
-                          .trim() as keyof typeof statuses
-                      ]
-                    }
-                    - {notification.status.split(",")[0].split(":")[1].trim()}
+                    {statuses[notification.status as keyof typeof statuses]} -{" "}
+                    {notification.status}
                   </p>
                 </div>
                 <p className="text-sm text-muted-foreground">
