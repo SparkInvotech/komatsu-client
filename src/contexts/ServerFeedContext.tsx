@@ -1,4 +1,6 @@
 import { createContext, useEffect, useState } from "react";
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export type ServerDataType = {
   status: string;
@@ -47,24 +49,21 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
     initialState.totalTimings,
   );
 
+  /** Effect for data loading from firestore but realtime */
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const req = await fetch("https://komatsu-server.vercel.app/");
-        const res = await req.json();
-        console.log("🚀 ~ fetchData ~ res:", res);
-        setData(res);
-      } catch (error) {
-        console.log("🚀 ~ fetchData ~ error:", error);
-        setError(String(error));
-      } finally {
-        setIsLoading(false);
-      }
-    }
+    const unSub = onSnapshot(collection(db, "komatsu_logs"), (piece) => {
+      setData(
+        piece.docs.map((d) => ({
+          time: d.id,
+          ...d.data(),
+        })) as ServerDataType[],
+      );
+    });
 
-    fetchData();
+    return () => unSub();
   }, []);
 
+  /** Effect to transform data and calculate timings and stats */
   useEffect(() => {
     function transformData(data: ServerDataType[]) {
       if (!data) {
