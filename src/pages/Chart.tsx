@@ -1,4 +1,4 @@
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartConfig,
   ChartContainer,
@@ -7,6 +7,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useServerData } from "@/hooks/useServerData";
 
 function getPastDays(numDays: number): string[] {
   const days = [];
@@ -29,9 +30,11 @@ function getPastDays(numDays: number): string[] {
 }
 
 const dates = getPastDays(7);
+
 let x = [200, 240, 140, 340, 170, 220, 240],
   y = [60, 80, 90, 50, 60, 50, 70],
   i = 0;
+
 const chartData = dates.map((date) => ({
   date: date,
   working: x[i], // Random minutes between 1 hour (60 mins) and 8 hours (480 mins)
@@ -40,28 +43,30 @@ const chartData = dates.map((date) => ({
 }));
 
 const chartConfig = {
-  working: {
+  totalRN: {
     label: "Working",
     color: "#2563eb",
   },
-  stopped: {
+  totalMS: {
     label: "Manual Stop",
     color: "#60a5fa",
   },
-  emergency: {
+  totalES: {
     label: "Emergency Stop",
-    color: "#AA4A44",
+    color: "#c83131",
   },
 } satisfies ChartConfig;
 
 export function Chart() {
+  const feed = useServerData();
+
   return (
     <ChartContainer config={chartConfig} className="mx-auto">
       <BarChart
         width={800} // width for desktop
         height={400} // height for desktop
-        data={chartData}
-        className="w-[90%] h-[90%] sm:w-[450px] sm:h-[300px] md:w-[600px] md:h-[350px] lg:w-[700px] lg:h-[400px] xl:w-[800px] xl:h-[450px]"
+        data={feed?.totalTimings}
+        className="w-[90%] h-[90%] sm:w-[450px] sm:h-[300px] md:w-[600px] md:h-[350px] lg:w-[700px] lg:h-[400px] xl:w-[800px] xl:h-[650px]"
       >
         <CartesianGrid vertical={false} />
         <XAxis
@@ -71,11 +76,27 @@ export function Chart() {
           axisLine={false}
           tickFormatter={(value) => value}
         />
+        <YAxis begin={0} end={1000} />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
-        <Bar dataKey="working" fill="var(--color-working)" radius={4} />
-        <Bar dataKey="stopped" fill="var(--color-stopped)" radius={4} />
-        <Bar dataKey="emergency" fill="#c30010" radius={4} />
+        <Bar
+          dataKey="totalRN"
+          label="Total Running"
+          fill="var(--color-totalRN)"
+          radius={4}
+        />
+        <Bar
+          dataKey="totalMS"
+          label="Total Manual Stop"
+          fill="var(--color-totalMS)"
+          radius={4}
+        />
+        <Bar
+          dataKey="totalES"
+          label="Total Emergency Stop"
+          fill="var(--color-totalES)"
+          radius={4}
+        />
       </BarChart>
     </ChartContainer>
   );
