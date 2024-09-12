@@ -8,8 +8,7 @@ import {
 } from "./ui/card";
 import { onValue, ref } from "firebase/database";
 import { db } from "@/lib/firebase";
-
-type NotificationType = { status: string; time: string; machine: number };
+import { useServerData } from "@/hooks/useServerData";
 
 const statuses = {
   ES: "Emergency Stop",
@@ -17,151 +16,14 @@ const statuses = {
   MS: "Manual Stop",
 };
 
-type TotalTimingType = {
-  totalES: number;
-  totalRN: number;
-  totalMS: number;
-};
-
-const DUMMY_DATA = [
-  {
-    machine: 1,
-    status: "RN",
-    time: "2024-09-02 08:22:03",
-  },
-  {
-    machine: 1,
-    status: "ES",
-    time: "2024-09-02 10:31:57",
-  },
-  {
-    machine: 1,
-    status: "RN",
-    time: "2024-09-02 12:55:50",
-  },
-  {
-    machine: 1,
-    status: "MS",
-    time: "2024-09-02 14:21:12",
-  },
-  {
-    machine: 1,
-    status: "RN",
-    time: "2024-09-02 18:14:09",
-  },
-  {
-    machine: 1,
-    status: "MS",
-    time: "2024-09-02 20:20:59",
-  },
-  {
-    machine: 1,
-    status: "RN",
-    time: "2024-09-04 08:32:03",
-  },
-  {
-    machine: 1,
-    status: "ES",
-    time: "2024-09-04 11:31:57",
-  },
-  {
-    machine: 1,
-    status: "RN",
-    time: "2024-09-04 11:55:50",
-  },
-  {
-    machine: 1,
-    status: "MS",
-    time: "2024-09-04 15:31:12",
-  },
-  {
-    machine: 1,
-    status: "RN",
-    time: "2024-09-04 16:44:09",
-  },
-  {
-    machine: 1,
-    status: "MS",
-    time: "2024-09-04 22:30:59",
-  },
-];
-
 function LiveFeedCard() {
-  const [notifications, setNotifications] = useState<
-    NotificationType[] | undefined
-  >();
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalTiming, setTotalTiming] = useState<TotalTimingType[] | undefined>(
-    [
-      {
-        totalES: 0,
-        totalRN: 0,
-        totalMS: 0,
-      },
-    ],
-  );
-
-  function calc(data: NotificationType[]) {
-    if (!data) {
-      return;
-    }
-    // data.sort((a, b) => new Date(b.time) - new Date(a.time));
-
-    // Group the data by date
-    const groupedData = data.reduce((acc, curr) => {
-      const date = curr.time.split(" ")[0];
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(curr);
-      return acc;
-    }, {});
-    console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
-
-    // Calculate the total time in ES1 state for each date
-    const result = Object.keys(groupedData).map((date) => {
-      let totalRN = 0;
-      let totalES = 0;
-      let totalMS = 0;
-      let prevStatus = "";
-      let prevTime = "";
-
-      groupedData[date].forEach((item) => {
-        const currentStatus = item.status;
-        if (prevStatus == "RN" && ["ES", "MS"].includes(currentStatus)) {
-          totalRN += (new Date(item.time) - new Date(prevTime)) / 60000;
-        } else if (prevStatus == "ES" && currentStatus == "RN") {
-          totalES += (new Date(item.time) - new Date(prevTime)) / 60000;
-        } else if (prevStatus == "MS" && currentStatus == "RN") {
-          totalMS += (new Date(item.time) - new Date(prevTime)) / 60000;
-        }
-        prevStatus = currentStatus;
-        prevTime = item.time;
-      });
-
-      return {
-        date,
-        totalES,
-        totalMS,
-        totalRN,
-      };
-    });
-
-    console.log(result);
-    setTotalTiming(
-      result.map(({ totalES, totalMS, totalRN }) => ({
-        totalES,
-        totalRN,
-        totalMS,
-      })),
-    );
-  }
+  const feed = useServerData();
 
   // useEffect(() => {
   //   const unssub = onValue(ref(db, "komatsu_logs"), (snapshot) => {
   //     const data = snapshot.toJSON();
   //     setIsLoading(false);
-  //     setNotifications(
+  //     setLogs(
   //       // @ts-ignore
   //       Object.keys(data)
   //         .map((key) => ({
@@ -178,26 +40,26 @@ function LiveFeedCard() {
   // }, []);
 
   /** Soon replace with snapshot listener from firebase */
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const req = await fetch("https://komatsu-server.vercel.app/");
-        const res = await req.json();
-        // const res = DUMMY_DATA;
-        console.log("🚀 ~ fetchData ~ res:", res);
-        // await new Promise((res) => setTimeout(() => res(1000), 1000));
-        setNotifications(res);
-        calc(res);
-      } catch (error) {
-        console.log("🚀 ~ fetchData ~ error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     try {
+  //       const req = await fetch("https://komatsu-server.vercel.app/");
+  //       const res = await req.json();
+  //       // const res = DUMMY_DATA;
+  //       console.log("🚀 ~ fetchData ~ res:", res);
+  //       // await new Promise((res) => setTimeout(() => res(1000), 1000));
+  //       setNotifications(res);
+  //       calc(res);
+  //     } catch (error) {
+  //       console.log("🚀 ~ fetchData ~ error:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   }
 
-    // calc(DUMMY_DATA);
-    fetchData();
-  }, []);
+  //   // calc(DUMMY_DATA);
+  //   fetchData();
+  // }, []);
 
   return (
     <Card className="w-full md:w-1/2">
@@ -208,13 +70,13 @@ function LiveFeedCard() {
               <div className="rounded-md border-gray-300 w-full border p-4 px-4">
                 <p className="text-lg font-small leading-none">Working time</p>
                 <p className="text-xl text-muted-foreground">
-                  {totalTiming?.at(-1)?.totalRN.toFixed(2)}/480 mins
+                  {feed?.totalTimings?.at(-1)?.totalRN.toFixed(2)}/480 mins
                 </p>
               </div>
               <div className="rounded-md border-gray-300 w-full border p-4 px-8">
                 <p className="text-lg font-small leading-none">Manual stop</p>
                 <p className="text-2lg text-muted-foreground">
-                  {totalTiming?.at(-1)?.totalMS.toFixed(2)} mins
+                  {feed?.totalTimings?.at(-1)?.totalMS.toFixed(2)} mins
                 </p>
               </div>
               <div className="rounded-md border-gray-300 w-full border p-4 px-8">
@@ -222,7 +84,7 @@ function LiveFeedCard() {
                   Emergency stop
                 </p>
                 <p className="text-2lg text-muted-foreground">
-                  {totalTiming?.at(-1)?.totalES.toFixed(2)} mins
+                  {feed?.totalTimings?.at(-1)?.totalES.toFixed(2)} mins
                 </p>
               </div>
             </div>
@@ -235,29 +97,27 @@ function LiveFeedCard() {
         <button onClick={calc}>Hi</button>
       </CardHeader> */}
       <CardContent className="grid gap-4 h-80 overflow-y-auto py-6">
-        {notifications ? (
-          notifications.map((notification, index) => (
+        {feed?.data ? (
+          feed?.data.toReversed().map((log, index) => (
             <div
               key={index}
               className="mb-4 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0"
             >
               <span
-                className={`flex h-2 w-2 translate-y-1 rounded-full bg-sky-500 ${notification.status == "ES" ? "bg-red-500" : ""}`}
+                className={`flex h-2 w-2 translate-y-1 rounded-full ${log.status === "ES" || log.status === "MS" ? "bg-red-500" : "bg-sky-500"}`}
               />
               <div className="space-y-1">
                 <div className="flex justify-between items-center space-x-4">
                   <p className="text-sm font-medium leading-none">
-                    {statuses[notification.status as keyof typeof statuses]} -{" "}
-                    {notification.status}
+                    {statuses[log.status as keyof typeof statuses]} -{" "}
+                    {log.status}
                   </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {notification.time}
-                </p>
+                <p className="text-sm text-muted-foreground">{log.time}</p>
               </div>
             </div>
           ))
-        ) : isLoading ? (
+        ) : feed?.isLoading && feed.error === "NO_ERROR" ? (
           <div className="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
             <svg
               className="text-gray-300 animate-spin"
@@ -284,8 +144,10 @@ function LiveFeedCard() {
               ></path>
             </svg>
           </div>
+        ) : feed?.error !== "NO_ERROR" ? (
+          <p>No data available.</p>
         ) : (
-          <p>No notifications available.</p>
+          <p className="text-red-400 text-sm">Something went wrong!</p>
         )}
         {/* <Button>View Details</Button> */}
       </CardContent>
