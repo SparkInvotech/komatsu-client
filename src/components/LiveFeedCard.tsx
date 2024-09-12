@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
-import { onValue, ref } from "firebase/database";
-import { db } from "@/lib/firebase";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useServerData } from "@/hooks/useServerData";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-import { RN_LIMIT } from "@/constants";
+import { RECORDS_PER_DAY, RN_LIMIT } from "@/constants";
 
 const statuses = {
   ES: "Emergency Stop",
@@ -69,25 +61,28 @@ function LiveFeedCard() {
       <CardContent className="grid gap-4 h-80 overflow-y-auto py-6">
         <ScrollArea>
           {feed?.data ? (
-            feed?.data.toReversed().map((log, index) => (
-              <div
-                key={index}
-                className="mb-2 grid grid-cols-[25px_1fr] items-start pb-1 last:mb-0 last:pb-0"
-              >
-                <span
-                  className={`flex h-2 w-2 translate-y-1 rounded-full ${log.status === "ES" || log.status === "MS" ? "bg-red-500" : "bg-sky-500"}`}
-                />
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center space-x-4">
-                    <p className="text-sm font-medium leading-none">
-                      {statuses[log.status as keyof typeof statuses]} -{" "}
-                      {log.status}
-                    </p>
+            feed?.data
+              .toReversed()
+              .slice(0, RECORDS_PER_DAY)
+              .map((log, index) => (
+                <div
+                  key={index}
+                  className="mb-2 grid grid-cols-[25px_1fr] items-start pb-1 last:mb-0 last:pb-0"
+                >
+                  <span
+                    className={`flex h-2 w-2 translate-y-1 rounded-full ${log.status === "ES" || log.status === "MS" ? "bg-red-500" : "bg-sky-500"}`}
+                  />
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center space-x-4">
+                      <p className="text-sm font-medium leading-none">
+                        {statuses[log.status as keyof typeof statuses]} -{" "}
+                        {log.status}
+                      </p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{log.time}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{log.time}</p>
                 </div>
-              </div>
-            ))
+              ))
           ) : feed?.isLoading && feed.error === "NO_ERROR" ? (
             <div className="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
               <svg
