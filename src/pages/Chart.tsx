@@ -65,7 +65,15 @@ export function Chart() {
       <BarChart
         width={800} // width for desktop
         height={400} // height for desktop
-        data={feed?.totalTimings}
+        data={
+          feed?.date?.startDate
+            ? feed?.totalTimings?.filter(
+                (time) =>
+                  new Date(time.date).toLocaleDateString() ===
+                  feed.date?.startDate?.toLocaleDateString(),
+              )
+            : feed?.totalTimings
+        }
         className="w-[90%] h-[90%] sm:w-[450px] sm:h-[300px] md:w-[600px] md:h-[350px] lg:w-[700px] lg:h-[400px] xl:w-[800px] xl:h-[650px]"
       >
         <CartesianGrid vertical={false} />

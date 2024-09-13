@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Icons } from "@/components/icons";
 import { appConfig } from "@/config/app";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { mainMenu } from "@/config/menu";
-import { ChevronDownIcon, ViewVerticalIcon } from "@radix-ui/react-icons";
+import { ViewVerticalIcon } from "@radix-ui/react-icons";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Logo } from "../logo";
 import { Accordion } from "@radix-ui/react-accordion";
@@ -37,66 +37,6 @@ export function Header() {
           <NavLink to="/" className="mr-6 flex items-center space-x-2">
             <Logo />
           </NavLink>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            {mainMenu.map((menu, index) =>
-              menu.items !== undefined ? (
-                <DropdownMenu key={index}>
-                  <DropdownMenuTrigger
-                    className={cn(
-                      "flex items-center py-1 focus:outline-none text-sm font-medium transition-colors hover:text-primary",
-                      menu.items
-                        .filter((subitem) => subitem.to !== undefined)
-                        .map((subitem) => subitem.to)
-                        .includes(location.pathname)
-                        ? "text-foreground"
-                        : "text-foreground/60"
-                    )}
-                  >
-                    {menu.title}
-                    <ChevronDownIcon className="ml-1 -mr-1 h-3 w-3 text-muted-foreground" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="w-48"
-                    align="start"
-                    forceMount
-                  >
-                    {menu.items.map((subitem, subindex) =>
-                      subitem.to !== undefined ? (
-                        <NavLink key={subindex} to={subitem.to}>
-                          <DropdownMenuItem
-                            className={cn("hover:cursor-pointer", {
-                              "bg-muted": subitem.to === location.pathname,
-                            })}
-                          >
-                            {subitem.title}
-                          </DropdownMenuItem>
-                        </NavLink>
-                      ) : subitem.label ? (
-                        <DropdownMenuLabel key={subindex}>
-                          {subitem.title}
-                        </DropdownMenuLabel>
-                      ) : (
-                        <DropdownMenuSeparator key={subindex} />
-                      )
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <NavLink
-                  key={index}
-                  to={menu.to ?? ""}
-                  className={({ isActive }) =>
-                    cn(
-                      "text-sm font-medium transition-colors hover:text-primary",
-                      isActive ? "text-foreground" : "text-foreground/60"
-                    )
-                  }
-                >
-                  {menu.title}
-                </NavLink>
-              )
-            )}
-          </nav>
         </div>
         {/* mobile */}
         <Sheet open={open} onOpenChange={setOpen}>
@@ -130,7 +70,7 @@ export function Header() {
                           .filter((subitem) => subitem.to !== undefined)
                           .map((subitem) => subitem.to)
                           .includes(location.pathname)
-                      : false
+                      : false,
                   )
                 }
               >
@@ -150,7 +90,7 @@ export function Header() {
                               .map((subitem) => subitem.to)
                               .includes(location.pathname)
                               ? "text-foreground"
-                              : "text-foreground/60"
+                              : "text-foreground/60",
                           )}
                         >
                           <div className="flex">{menu.title}</div>
@@ -168,7 +108,7 @@ export function Header() {
                                       "block justify-start py-1 h-auto font-normal hover:text-primary",
                                       isActive
                                         ? "text-foreground"
-                                        : "text-foreground/60"
+                                        : "text-foreground/60",
                                     )
                                   }
                                 >
@@ -178,7 +118,7 @@ export function Header() {
                                 <div className="px-3">
                                   {/* <Separator /> */}
                                 </div>
-                              )
+                              ),
                             )}
                           </div>
                         </AccordionContent>
@@ -191,13 +131,13 @@ export function Header() {
                         className={({ isActive }) =>
                           cn(
                             "py-1 text-sm font-medium transition-colors hover:text-primary",
-                            isActive ? "text-foreground" : "text-foreground/60"
+                            isActive ? "text-foreground" : "text-foreground/60",
                           )
                         }
                       >
                         {menu.title}
                       </NavLink>
-                    )
+                    ),
                   )}
                 </div>
               </Accordion>

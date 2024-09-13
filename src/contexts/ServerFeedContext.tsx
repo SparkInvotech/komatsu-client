@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { DateValueType } from "react-tailwindcss-datepicker";
 
 export type ServerDataType = {
   status: string;
@@ -21,10 +22,12 @@ export type DataProviderContextType =
       isLoading: boolean;
       error: string | "NO_ERROR";
       totalTimings: TotalTimingType[] | undefined;
+      date: DateValueType;
+      setDate: React.Dispatch<React.SetStateAction<DateValueType>>;
     }
   | undefined;
 
-const initialState = {
+const initialState: DataProviderContextType = {
   data: undefined,
   isLoading: true,
   error: "NO_ERROR",
@@ -36,6 +39,11 @@ const initialState = {
       date: "",
     },
   ],
+  date: {
+    startDate: null,
+    endDate: null,
+  },
+  setDate: () => null,
 };
 
 export const DataProviderContext =
@@ -48,7 +56,11 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
   const [totalTime, setTotalTime] = useState<TotalTimingType[] | undefined>(
     initialState.totalTimings,
   );
-  console.log("🚀 ~ DataProvider ~ totalTime:", data, totalTime);
+  const [date, setDate] = useState<DateValueType>({
+    startDate: null,
+    endDate: null,
+  });
+  // console.log("🚀 ~ DataProvider ~ totalTime:", data, totalTime);
 
   /** Effect for data loading from firestore but realtime */
   useEffect(() => {
@@ -88,7 +100,7 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
         acc[date].push(curr);
         return acc;
       }, {});
-      console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
+      // console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
 
       // Calculate the total time in ES1 state for each date
       const result = Object.keys(groupedData).map((date) => {
@@ -139,6 +151,8 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
         isLoading,
         error,
         totalTimings: totalTime,
+        date,
+        setDate,
       }}
     >
       {children}
