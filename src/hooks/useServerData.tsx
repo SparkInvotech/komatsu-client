@@ -8,7 +8,7 @@ export function useServerData(): DataProviderContextType {
   const context = useContext(DataProviderContext);
 
   if (context === undefined)
-    throw new Error("useServerData must be used within a DataContextProvder");
+    throw new Error("useServerData must be used within a DataProvderContext");
 
   return context;
 }

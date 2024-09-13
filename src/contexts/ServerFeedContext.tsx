@@ -27,6 +27,8 @@ export type DataProviderContextType =
     }
   | undefined;
 
+type GroupedDataType = { [key: string]: ServerDataType[] };
+
 const initialState: DataProviderContextType = {
   data: undefined,
   isLoading: true,
@@ -99,7 +101,7 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
         }
         acc[date].push(curr);
         return acc;
-      }, {});
+      }, {} as GroupedDataType);
       console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
 
       // Calculate the total time in ES1 state for each date
@@ -113,11 +115,17 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
         groupedData[date].forEach((item) => {
           const currentStatus = item.status;
           if (prevStatus == "RN" && ["ES", "MS"].includes(currentStatus)) {
-            totalRN += (new Date(item.time) - new Date(prevTime)) / 60000;
+            totalRN +=
+              (new Date(item.time).getTime() - new Date(prevTime).getTime()) /
+              60000;
           } else if (prevStatus == "ES" && currentStatus == "RN") {
-            totalES += (new Date(item.time) - new Date(prevTime)) / 60000;
+            totalES +=
+              (new Date(item.time).getTime() - new Date(prevTime).getTime()) /
+              60000;
           } else if (prevStatus == "MS" && currentStatus == "RN") {
-            totalMS += (new Date(item.time) - new Date(prevTime)) / 60000;
+            totalMS +=
+              (new Date(item.time).getTime() - new Date(prevTime).getTime()) /
+              60000;
           }
           prevStatus = currentStatus;
           prevTime = item.time;
@@ -141,7 +149,8 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
       );
     }
 
-    if (data) transformData(data);
+    if (!data) return;
+    transformData(data);
   }, [data]);
 
   return (
