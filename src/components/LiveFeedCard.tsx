@@ -12,45 +12,61 @@ const statuses = {
 
 function LiveFeedCard() {
   const feed = useServerData();
-
+  const totalESTime = feed?.totalTimings?.at(-1)?.totalES!;
+  const totalRNTime = feed?.totalTimings?.at(-1)?.totalRN!;
+  const totalMSTime = feed?.totalTimings?.at(-1)?.totalMS!;
   return (
     <Card className="w-full md:w-1/2">
       <CardHeader>
         <div className="flex justify-between items-top space-x-4">
           <CardTitle className="w-full">
             <div className="grid grid-rows-3 grid-cols-none md:grid-cols-3 md:grid-rows-none gap-3 w-full items-center">
-              <div className="rounded-md border-gray-300 w-full border md:p-3.5 p-4 px-8">
-                <p className="text-lg flex justify-between font-small leading-none">
+              <div className="rounded-md flex items-center justify-center flex-col border-gray-300 w-full border md:p-3.5 p-4 px-8">
+                <p className="text-base flex gap-2 justify-between font-small leading-none">
                   Working time{" "}
                   <span className="text-sm">
                     (
                     {(
-                      (parseFloat(
-                        feed?.totalTimings?.at(-1)?.totalRN.toFixed(2)!,
-                      ) /
-                        RN_LIMIT) *
+                      (parseFloat(totalRNTime.toFixed(2)) / RN_LIMIT) *
                       100
                     ).toFixed(2)}
                     %)
                   </span>
                 </p>
                 <p className="text-xl text-muted-foreground">
-                  {feed?.totalTimings?.at(-1)?.totalRN.toFixed(2)}/{RN_LIMIT}{" "}
-                  mins{" "}
+                  {totalRNTime / 60 < 1
+                    ? 0
+                    : parseInt((totalRNTime / 60).toFixed(0))}{" "}
+                  hr{" "}
+                  <span className="text-sm">
+                    {(totalRNTime % 60).toFixed(2)}mins
+                  </span>
                 </p>
               </div>
-              <div className="rounded-md border-gray-300 w-full border p-4 px-8">
-                <p className="text-lg font-small leading-none">Manual stop</p>
-                <p className="text-2lg text-muted-foreground">
-                  {feed?.totalTimings?.at(-1)?.totalMS.toFixed(2)} mins
+              <div className="rounded-md flex items-center justify-center flex-col border-gray-300 w-full border p-4 px-8">
+                <p className="text-base ont-small leading-none">Manual stop</p>
+                <p className="text-lg text-muted-foreground">
+                  {totalMSTime / 60 < 1
+                    ? 0
+                    : parseInt((totalMSTime / 60).toFixed(2))}{" "}
+                  hr{" "}
+                  <span className="text-sm">
+                    {(totalMSTime % 60).toFixed(2)} mins
+                  </span>
                 </p>
               </div>
-              <div className="rounded-md border-gray-300 w-full border p-4 px-8">
-                <p className="text-lg font-small leading-none">
+              <div className="rounded-md flex items-center justify-center flex-col border-gray-300 w-full border p-4 px-8">
+                <p className="text-base ont-small leading-none">
                   Emergency stop
                 </p>
-                <p className="text-2lg text-muted-foreground">
-                  {feed?.totalTimings?.at(-1)?.totalES.toFixed(2)} mins
+                <p className="text-lg text-muted-foreground">
+                  {totalESTime / 60 < 1
+                    ? 0
+                    : parseInt((totalESTime / 60).toFixed(2))}{" "}
+                  hr{" "}
+                  <span className="text-sm">
+                    {(totalESTime % 60).toFixed(2)} mins
+                  </span>
                 </p>
               </div>
             </div>

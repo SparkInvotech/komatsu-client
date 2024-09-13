@@ -100,7 +100,7 @@ export const DataProvider = ({ children }: React.PropsWithChildren) => {
         acc[date].push(curr);
         return acc;
       }, {});
-      // console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
+      console.log("🚀 ~ groupedData ~ groupedData:", groupedData);
 
       // Calculate the total time in ES1 state for each date
       const result = Object.keys(groupedData).map((date) => {
