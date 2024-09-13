@@ -36,10 +36,10 @@ function LiveFeedCard() {
                 <p className="text-xl text-muted-foreground">
                   {totalRNTime / 60 < 1
                     ? 0
-                    : parseInt((totalRNTime / 60).toFixed(0))}{" "}
+                    : parseInt((totalRNTime / 60).toFixed(2))}{" "}
                   hr{" "}
                   <span className="text-sm">
-                    {(totalRNTime % 60).toFixed(2)}mins
+                    {parseInt((totalRNTime % 60).toFixed(2))}mins
                   </span>
                 </p>
               </div>
@@ -51,7 +51,7 @@ function LiveFeedCard() {
                     : parseInt((totalMSTime / 60).toFixed(2))}{" "}
                   hr{" "}
                   <span className="text-sm">
-                    {(totalMSTime % 60).toFixed(2)} mins
+                    {parseInt((totalMSTime % 60).toFixed(2))} mins
                   </span>
                 </p>
               </div>
@@ -65,7 +65,7 @@ function LiveFeedCard() {
                     : parseInt((totalESTime / 60).toFixed(2))}{" "}
                   hr{" "}
                   <span className="text-sm">
-                    {(totalESTime % 60).toFixed(2)} mins
+                    {parseInt((totalESTime % 60).toFixed(2))} mins
                   </span>
                 </p>
               </div>
